@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infrastructure-config
+  namespace: autoparts
+data:
+  POSTGRES_USER: autoparts
+  POSTGRES_DB: autoparts
+  RABBITMQ_DEFAULT_USER: autoparts
+  RABBITMQ_DEFAULT_VHOST: autoparts

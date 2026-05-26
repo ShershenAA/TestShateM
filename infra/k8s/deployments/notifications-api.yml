@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-api
+  namespace: autoparts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications-api
+  template:
+    metadata:
+      labels:
+        app: notifications-api
+    spec:
+      containers:
+        - name: notifications-api
+          image: testshatem-notifications-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__Redis
+              value: "redis:6379,password=autoparts_redis"
+            - name: RabbitMQ__Host
+              value: rabbitmq
+            - name: RabbitMQ__VHost
+              value: autoparts
+            - name: RabbitMQ__User
+              value: autoparts
+            - name: RabbitMQ__Pass
+              value: autoparts_pass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications-api
+  namespace: autoparts
+spec:
+  selector:
+    app: notifications-api
+  ports:
+    - port: 8080
+      targetPort: 8080

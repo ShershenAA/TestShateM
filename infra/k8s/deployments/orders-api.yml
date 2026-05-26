@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-api
+  namespace: autoparts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-api
+  template:
+    metadata:
+      labels:
+        app: orders-api
+    spec:
+      containers:
+        - name: orders-api
+          image: testshatem-orders-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__Mssql
+              value: "Server=mssql;Database=orders_db;User Id=sa;Password=AutoParts_Str0ng!;TrustServerCertificate=true"
+            - name: ConnectionStrings__Redis
+              value: "redis:6379,password=autoparts_redis"
+            - name: RabbitMQ__Host
+              value: rabbitmq
+            - name: RabbitMQ__VHost
+              value: autoparts
+            - name: RabbitMQ__User
+              value: autoparts
+            - name: RabbitMQ__Pass
+              value: autoparts_pass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-api
+  namespace: autoparts
+spec:
+  selector:
+    app: orders-api
+  ports:
+    - port: 8080
+      targetPort: 8080

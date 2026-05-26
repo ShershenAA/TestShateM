@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-api
+  namespace: autoparts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-api
+  template:
+    metadata:
+      labels:
+        app: inventory-api
+    spec:
+      containers:
+        - name: inventory-api
+          image: testshatem-inventory-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__Postgres
+              value: "Host=postgres;Database=inventory_db;Username=autoparts;Password=autoparts_pass"
+            - name: RabbitMQ__Host
+              value: rabbitmq
+            - name: RabbitMQ__VHost
+              value: autoparts
+            - name: RabbitMQ__User
+              value: autoparts
+            - name: RabbitMQ__Pass
+              value: autoparts_pass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-api
+  namespace: autoparts
+spec:
+  selector:
+    app: inventory-api
+  ports:
+    - port: 8080
+      targetPort: 8080

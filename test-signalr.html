@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #log { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; }
+        .confirmed { color: green; }
+        .rejected { color: red; }
+        input, button { margin: 5px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h2>SignalR Test — Order Notifications</h2>
+
+    <div>
+        <input id="dealerId" placeholder="Dealer ID (guid)" style="width: 300px" />
+        <button onclick="connect()">Подключиться</button>
+        <span id="status">⚫ Не подключён</span>
+    </div>
+
+    <br/>
+    <div id="log"></div>
+
+    <script>
+        let connection = null;
+
+        function log(message, cssClass = '') {
+            const div = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = cssClass;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            div.appendChild(entry);
+            div.scrollTop = div.scrollHeight;
+        }
+
+        async function connect() {
+            const dealerId = document.getElementById('dealerId').value.trim();
+            if (!dealerId) {
+                alert('Введи Dealer ID');
+                return;
+            }
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("http://localhost:5127/hubs/orders")
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("OrderStatusChanged", (data) => {
+                const cssClass = data.status === 'Confirmed' ? 'confirmed' : 'rejected';
+                log(`Статус заказа ${data.orderId}: ${data.status} — ${data.message}`, cssClass);
+            });
+
+            connection.onclose(() => {
+                document.getElementById('status').textContent = '⚫ Отключён';
+            });
+
+            try {
+                await connection.start();
+                await connection.invoke("SubscribeToDealer", dealerId);
+                document.getElementById('status').textContent = '🟢 Подключён';
+                log(`Подписались на уведомления дилера ${dealerId}`);
+            } catch (err) {
+                log(`Ошибка: ${err}`, 'rejected');
+            }
+        }
+    </script>
+</body>
+</html>

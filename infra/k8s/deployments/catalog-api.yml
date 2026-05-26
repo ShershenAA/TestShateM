@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-api
+  namespace: autoparts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog-api
+  template:
+    metadata:
+      labels:
+        app: catalog-api
+    spec:
+      containers:
+        - name: catalog-api
+          image: testshatem-catalog-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__Postgres
+              value: "Host=postgres;Database=catalog_db;Username=autoparts;Password=autoparts_pass"
+            - name: ConnectionStrings__Redis
+              value: "redis:6379,password=autoparts_redis"
+            - name: Elasticsearch__Uri
+              value: "http://elasticsearch:9200"
+            - name: RabbitMQ__Host
+              value: rabbitmq
+            - name: RabbitMQ__VHost
+              value: autoparts
+            - name: RabbitMQ__User
+              value: autoparts
+            - name: RabbitMQ__Pass
+              value: autoparts_pass
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-api
+  namespace: autoparts
+spec:
+  selector:
+    app: catalog-api
+  ports:
+    - port: 8080
+      targetPort: 8080

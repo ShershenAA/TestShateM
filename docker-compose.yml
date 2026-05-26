@@ -1,0 +1,323 @@
+version: "3.9"
+
+# ============================================================
+#  AutoParts B2B Platform — Local Dev Infrastructure
+#  Запуск: docker compose up -d
+#  Все UI-адреса перечислены в README.md
+# ============================================================
+
+networks:
+  autoparts-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mssql_data:
+  redis_data:
+  elastic_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+
+services:
+
+  # ──────────────────────────────────────────────
+  #  DATABASES
+  # ──────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: autoparts-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: autoparts
+      POSTGRES_PASSWORD: autoparts_pass
+      POSTGRES_DB: autoparts
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - autoparts-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autoparts"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: autoparts-mssql
+    restart: unless-stopped
+    environment:
+      SA_PASSWORD: "AutoParts_Str0ng!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - autoparts-net
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'AutoParts_Str0ng!' -Q 'SELECT 1' -No"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ──────────────────────────────────────────────
+  #  CACHE & MESSAGE BROKER
+  # ──────────────────────────────────────────────
+
+  redis:
+    image: redis:7-alpine
+    container_name: autoparts-redis
+    restart: unless-stopped
+    command: redis-server --requirepass autoparts_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - autoparts-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "autoparts_redis", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: autoparts-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: autoparts
+      RABBITMQ_DEFAULT_PASS: autoparts_pass
+      RABBITMQ_DEFAULT_VHOST: autoparts
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI → http://localhost:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - autoparts-net
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ──────────────────────────────────────────────
+  #  SEARCH
+  # ──────────────────────────────────────────────
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: autoparts-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ELASTIC_PASSWORD=autoparts_elastic
+    ports:
+      - "9200:9200"
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+    networks:
+      - autoparts-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: autoparts-kibana
+    restart: unless-stopped
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601" # Kibana UI → http://localhost:5601
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - autoparts-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.4
+    container_name: autoparts-logstash
+    restart: unless-stopped
+    # volumes:
+    #   - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
+    #   - ./docker/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    ports:
+      - "5044:5044" # Beats input
+      - "9600:9600" # Monitoring API
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - autoparts-net
+
+  # ──────────────────────────────────────────────
+  #  OBSERVABILITY
+  # ──────────────────────────────────────────────
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: autoparts-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090" # Prometheus UI → http://localhost:9090
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - autoparts-net
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: autoparts-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: autoparts_admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000" # Grafana UI → http://localhost:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - autoparts-net
+
+  # ──────────────────────────────────────────────
+  #  MICROSERVICES  (.NET 10)
+  # ──────────────────────────────────────────────
+
+  catalog-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog
+    container_name: autoparts-catalog
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Postgres: "Host=postgres;Database=catalog_db;Username=autoparts;Password=autoparts_pass"
+      ConnectionStrings__Redis: "redis:6379,password=autoparts_redis"
+      Elasticsearch__Uri: "http://elasticsearch:9200"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__VHost: "autoparts"
+      RabbitMQ__User: "autoparts"
+      RabbitMQ__Pass: "autoparts_pass"
+    ports:
+      - "5001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - autoparts-net
+
+  orders-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.orders
+    container_name: autoparts-orders
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Mssql: "Server=mssql;Database=orders_db;User Id=sa;Password=AutoParts_Str0ng!;TrustServerCertificate=true"
+      ConnectionStrings__Redis: "redis:6379,password=autoparts_redis"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__VHost: "autoparts"
+      RabbitMQ__User: "autoparts"
+      RabbitMQ__Pass: "autoparts_pass"
+    ports:
+      - "5002:8080"
+    depends_on:
+      mssql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - autoparts-net
+
+  inventory-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.inventory
+    container_name: autoparts-inventory
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Postgres: "Host=postgres;Database=inventory_db;Username=autoparts;Password=autoparts_pass"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__VHost: "autoparts"
+      RabbitMQ__User: "autoparts"
+      RabbitMQ__Pass: "autoparts_pass"
+    ports:
+      - "5003:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - autoparts-net
+
+  notifications-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.notifications
+    container_name: autoparts-notifications
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Redis: "redis:6379,password=autoparts_redis"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__VHost: "autoparts"
+      RabbitMQ__User: "autoparts"
+      RabbitMQ__Pass: "autoparts_pass"
+    ports:
+      - "5004:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - autoparts-net
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: autoparts-gateway
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "5000:8080" # Единая точка входа → http://localhost:5000
+    depends_on:
+      - catalog-api
+      - orders-api
+      - inventory-api
+      - notifications-api
+    networks:
+      - autoparts-net

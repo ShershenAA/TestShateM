@@ -1,0 +1,21 @@
+﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Копируем оба csproj
+COPY ["src/services/Notifications.API/Notifications.API.csproj", "src/services/Notifications.API/"]
+COPY ["src/Shared.Contracts/Shared.Contracts.csproj", "src/Shared.Contracts/"]
+RUN dotnet restore "src/services/Notifications.API/Notifications.API.csproj"
+
+# Копируем весь код
+COPY . .
+RUN dotnet publish "src/services/Notifications.API/Notifications.API.csproj" -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+# ← это исправляет libgssapi_krb5.so.2
+RUN apt-get update && apt-get install -y libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Notifications.API.dll"]
