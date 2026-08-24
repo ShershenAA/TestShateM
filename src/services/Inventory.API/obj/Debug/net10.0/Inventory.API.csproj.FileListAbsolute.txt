@@ -140,3 +140,7 @@ D:\TestShateM\src\services\Inventory.API\obj\Debug\net10.0\refint\Inventory.API.
 D:\TestShateM\src\services\Inventory.API\obj\Debug\net10.0\Inventory.API.pdb
 D:\TestShateM\src\services\Inventory.API\obj\Debug\net10.0\Inventory.API.genruntimeconfig.cache
 D:\TestShateM\src\services\Inventory.API\obj\Debug\net10.0\ref\Inventory.API.dll
+D:\TestShateM\src\services\Inventory.API\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+D:\TestShateM\src\services\Inventory.API\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+D:\TestShateM\src\services\Inventory.API\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+D:\TestShateM\src\services\Inventory.API\obj\Debug\net10.0\Inventory.API.sourcelink.json

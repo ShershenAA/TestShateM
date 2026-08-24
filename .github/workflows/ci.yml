@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/services/AutoParts.sln
+
+      - name: Build
+        run: dotnet build src/services/AutoParts.sln --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test src/services/AutoParts.sln --no-build --configuration Release --verbosity normal
+
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: test  # запускается только если тесты прошли
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Catalog API
+        run: docker build -f Dockerfile.catalog -t autoparts-catalog:${{ github.sha }} .
+
+      - name: Build Orders API
+        run: docker build -f Dockerfile.orders -t autoparts-orders:${{ github.sha }} .
+
+      - name: Build Inventory API
+        run: docker build -f Dockerfile.inventory -t autoparts-inventory:${{ github.sha }} .
+
+      - name: Build Notifications API
+        run: docker build -f Dockerfile.notifications -t autoparts-notifications:${{ github.sha }} .
+
+      - name: Build Gateway
+        run: docker build -f Dockerfile.gateway -t autoparts-gateway:${{ github.sha }} .

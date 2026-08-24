@@ -254,3 +254,4 @@ D:\TestShateM\src\services\Catalog.API\obj\Debug\net10.0\refint\Catalog.API.dll
 D:\TestShateM\src\services\Catalog.API\obj\Debug\net10.0\Catalog.API.pdb
 D:\TestShateM\src\services\Catalog.API\obj\Debug\net10.0\Catalog.API.genruntimeconfig.cache
 D:\TestShateM\src\services\Catalog.API\obj\Debug\net10.0\ref\Catalog.API.dll
+D:\TestShateM\src\services\Catalog.API\obj\Debug\net10.0\Catalog.API.sourcelink.json

@@ -59,3 +59,7 @@ D:\TestShateM\src\services\Notifications.API\obj\Debug\net10.0\refint\Notificati
 D:\TestShateM\src\services\Notifications.API\obj\Debug\net10.0\Notifications.API.pdb
 D:\TestShateM\src\services\Notifications.API\obj\Debug\net10.0\Notifications.API.genruntimeconfig.cache
 D:\TestShateM\src\services\Notifications.API\obj\Debug\net10.0\ref\Notifications.API.dll
+D:\TestShateM\src\services\Notifications.API\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+D:\TestShateM\src\services\Notifications.API\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+D:\TestShateM\src\services\Notifications.API\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+D:\TestShateM\src\services\Notifications.API\obj\Debug\net10.0\Notifications.API.sourcelink.json

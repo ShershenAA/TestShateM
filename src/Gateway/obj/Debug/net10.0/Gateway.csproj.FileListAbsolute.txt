@@ -40,3 +40,15 @@ D:\TestShateM\src\Gateway\obj\Debug\net10.0\refint\Gateway.dll
 D:\TestShateM\src\Gateway\obj\Debug\net10.0\Gateway.pdb
 D:\TestShateM\src\Gateway\obj\Debug\net10.0\Gateway.genruntimeconfig.cache
 D:\TestShateM\src\Gateway\obj\Debug\net10.0\ref\Gateway.dll
+D:\TestShateM\src\Gateway\obj\Debug\net10.0\Gateway.MvcApplicationPartsAssemblyInfo.cs
+D:\TestShateM\src\Gateway\obj\Debug\net10.0\Gateway.sourcelink.json
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Prometheus.NetStandard.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\Prometheus.AspNetCore.dll
+D:\TestShateM\src\Gateway\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
