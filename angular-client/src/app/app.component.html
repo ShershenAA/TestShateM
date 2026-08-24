@@ -1,0 +1,38 @@
+<div class="app-layout">
+  <app-login *ngIf="!auth.isLoggedIn()" />
+
+  <ng-container *ngIf="auth.isLoggedIn()">
+    <header class="app-header">
+      <div class="logo">⚙️ AutoParts B2B</div>
+      <nav class="nav">
+        <button
+          *ngFor="let tab of tabs"
+          (click)="switchTab(tab.id)"
+          [class.active]="activeTab === tab.id"
+          class="nav-btn"
+        >
+          {{ tab.label }}
+          <span *ngIf="getBadge(tab.id) > 0" class="badge">{{ getBadge(tab.id) }}</span>
+        </button>
+      </nav>
+      <button (click)="logout()" class="logout-btn">Выйти</button>
+    </header>
+
+    <main class="app-main">
+      <app-parts
+        *ngIf="activeTab === 'catalog'"
+        (addToCart)="onAddToCart($event)"
+      />
+      <app-cart
+        *ngIf="activeTab === 'cart'"
+        [items]="cartItems"
+        (orderPlaced)="onOrderPlaced($event)"
+        (removeItem)="onRemoveItem($event)"
+      />
+      <app-notifications
+        *ngIf="activeTab === 'notifications'"
+        [notifications]="notifications"
+      />
+    </main>
+  </ng-container>
+</div>

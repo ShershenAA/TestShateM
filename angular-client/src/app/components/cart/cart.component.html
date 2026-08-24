@@ -1,0 +1,37 @@
+<div class="cart-container">
+  <h2>Корзина</h2>
+
+  <div *ngIf="items.length === 0" class="empty">
+    Корзина пуста — добавьте запчасти из каталога
+  </div>
+
+  <div *ngIf="items.length > 0">
+    <div *ngFor="let item of items" class="cart-item">
+      <div class="item-info">
+        <span class="item-name">{{ item.part.name }}</span>
+        <span class="item-article">{{ item.part.articleNumber }}</span>
+      </div>
+      <div class="item-controls">
+        <button (click)="updateQuantity(item, item.quantity - 1)" class="qty-btn">−</button>
+        <span class="qty">{{ item.quantity }}</span>
+        <button (click)="updateQuantity(item, item.quantity + 1)" class="qty-btn">+</button>
+      </div>
+      <span class="item-price">{{ item.part.price * item.quantity | currency:'RUB':'symbol':'1.0-0' }}</span>
+      <button (click)="removeItem.emit(item.part.id)" class="remove-btn">✕</button>
+    </div>
+
+    <div class="cart-footer">
+      <div class="total">Итого: {{ total | currency:'RUB':'symbol':'1.0-0' }}</div>
+      <textarea
+        [(ngModel)]="comment"
+        placeholder="Комментарий к заказу..."
+        class="comment-input"
+        rows="2"
+      ></textarea>
+      <button (click)="placeOrder()" [disabled]="loading" class="btn-order">
+        {{ loading ? 'Оформление...' : 'Оформить заказ' }}
+      </button>
+      <div *ngIf="message" class="message">{{ message }}</div>
+    </div>
+  </div>
+</div>

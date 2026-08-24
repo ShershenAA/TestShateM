@@ -1,0 +1,20 @@
+<div class="notifications-container">
+  <div class="notifications-header">
+    <h2>Уведомления</h2>
+  </div>
+
+  <div *ngIf="notifications.length === 0" class="empty">
+    Уведомлений пока нет — оформите заказ чтобы увидеть статус
+  </div>
+
+  <div *ngFor="let n of notifications" class="notification-item" [ngClass]="getStatusClass(n.status)">
+    <div class="notification-header">
+      <span class="notification-status">
+        {{ n.status === 'Confirmed' ? '✅ Подтверждён' : '❌ Отклонён' }}
+      </span>
+      <span class="notification-time">{{ n.timestamp | date:'HH:mm:ss' }}</span>
+    </div>
+    <p class="notification-message">{{ n.message }}</p>
+    <span class="notification-order">Заказ: {{ n.orderId.slice(0, 8) }}...</span>
+  </div>
+</div>

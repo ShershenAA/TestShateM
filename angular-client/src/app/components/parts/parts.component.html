@@ -1,0 +1,37 @@
+<div class="parts-container">
+  <div class="search-bar">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="search()"
+      placeholder="Поиск по названию, артикулу, бренду..."
+      class="search-input"
+    />
+    <button (click)="search()" class="btn btn-primary">Найти</button>
+    <button (click)="searchQuery = ''; loadParts()" class="btn btn-secondary">Сбросить</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Загрузка...</div>
+
+  <div *ngIf="!loading && parts.length === 0" class="empty">
+    Запчасти не найдены
+  </div>
+
+  <div class="parts-grid">
+    <div *ngFor="let part of parts" class="part-card">
+      <div class="part-header">
+        <span class="article">{{ part.articleNumber }}</span>
+        <span class="brand">{{ part.brand }}</span>
+      </div>
+      <h3 class="part-name">{{ part.name }}</h3>
+      <p class="part-description">{{ part.description }}</p>
+      <div class="part-footer">
+        <span class="category">{{ part.category }}</span>
+        <span class="price">{{ part.price | currency:'RUB':'symbol':'1.0-0' }}</span>
+      </div>
+      <button (click)="onAddToCart(part)" class="btn btn-add">
+        В корзину
+      </button>
+    </div>
+  </div>
+</div>

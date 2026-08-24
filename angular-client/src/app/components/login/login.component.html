@@ -1,0 +1,40 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-logo">⚙️ AutoParts B2B</div>
+    <h2>Вход в систему</h2>
+
+    <div class="form-group">
+      <label>Логин</label>
+      <input
+        type="text"
+        [(ngModel)]="username"
+        (keyup.enter)="login()"
+        placeholder="dealer1"
+        class="form-input"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Пароль</label>
+      <input
+        type="password"
+        [(ngModel)]="password"
+        (keyup.enter)="login()"
+        placeholder="password123"
+        class="form-input"
+      />
+    </div>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <button (click)="login()" [disabled]="loading" class="login-btn">
+      {{ loading ? 'Вход...' : 'Войти' }}
+    </button>
+
+    <div class="hints">
+      <p>Тестовые пользователи:</p>
+      <code>dealer1 / password123</code><br>
+      <code>admin / admin123</code>
+    </div>
+  </div>
+</div>

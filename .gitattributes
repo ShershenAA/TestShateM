@@ -1,0 +1,22 @@
+# Нормализуем переносы строк
+* text=auto
+
+# TypeScript/JavaScript — всегда LF
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.scss text eol=lf
+*.css text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# C# — всегда LF
+*.cs text eol=lf
+*.csproj text eol=lf
+*.sln text eol=lf
+
+# Бинарные файлы — не трогать
+*.png binary
+*.jpg binary
+*.ico binary
