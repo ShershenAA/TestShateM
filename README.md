@@ -5,34 +5,21 @@ B2B платформа для оптовых закупок автозапчас
 ![CI](https://github.com/ShershenAA/TestShateM/actions/workflows/ci.yml/badge.svg)
 
 ## Архитектура
-```
-┌─────────────────────────────────────────────────────┐
-│ Angular Client                                      │
-│ Каталог · Корзина · Уведомления                     │
-└────────────────────┬────────────────────────────────┘
-                     │ HTTP + SignalR
-                     ▼
-┌─────────────────────────────────────────────────────┐
-│ API Gateway (YARP)                                  │
-│ JWT Auth · Routing · Rate Limit                     │
-└──────┬──────────┬──────────┬───────────┬────────────┘
-       │          │          │           │
-       ▼          ▼          ▼           ▼
-┌──────────┐ ┌─────────┐ ┌──────────┐ ┌──────────────┐
-│Catalog   │ │Orders   │ │Inventory │ │Notifications │
-│API       │ │API      │ │API       │ │API           │
-│          │ │         │ │          │ │              │
-│PostgreSQL│ │MSSQL    │ │PostgreSQL│ │SignalR       │
-│Redis     │ │         │ │          │ │Redis         │
-│Elastic   │ │         │ │          │ │              │
-└──────────┘ └────┬────┘ └─────┬────┘ └──────┬───────┘
-                  │            │             │
-                  └──────┬─────┘             │
-                         ▼                   │
-            ┌─────────────────┐              │
-            │ RabbitMQ        │──────────────┘
-            │ Message Bus     │
-            └─────────────────┘
+```mermaid
+graph TD
+    A[Angular Client<br/>Каталог · Корзина · Уведомления] -->|HTTP + SignalR| B
+
+    B[API Gateway YARP<br/>JWT Auth · Routing]
+
+    B --> C[Catalog.API<br/>PostgreSQL · Redis · Elasticsearch]
+    B --> D[Orders.API<br/>MSSQL]
+    B --> E[Inventory.API<br/>PostgreSQL]
+    B --> F[Notifications.API<br/>SignalR · Redis]
+
+    D -->|OrderCreated| G[RabbitMQ]
+    G -->|OrderCreated| E
+    G -->|OrderConfirmed / OrderRejected| F
+    F -->|SignalR Push| A
 ```
 ## Стек технологий
 
@@ -169,7 +156,7 @@ TestShateM/
 └── Notifications.API/
 ```
 ## CI/CD
-```bash
+```
 GitHub Actions запускается на каждый push в `main`:
 push → test-backend (dotnet test) ─┐
        → test-frontend (ng build) ─┴→ build-images (docker build x5)
