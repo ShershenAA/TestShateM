@@ -172,6 +172,6 @@ TestShateM/
 ```bash
 GitHub Actions запускается на каждый push в `main`:
 push → test-backend (dotnet test) ─┐
-      → test-frontend (ng build) ─┴→ build-images (docker build x5)
+       → test-frontend (ng build) ─┴→ build-images (docker build x5)
 ```
 
