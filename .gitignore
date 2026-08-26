@@ -9,6 +9,9 @@ obj/
 .idea/
 *.DotSettings.user
 
+# TypeScript
+*.tsbuildinfo
+
 # Logs
 *.log
 logs/
