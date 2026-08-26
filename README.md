@@ -9,7 +9,7 @@ B2B платформа для оптовых закупок автозапчас
 graph TD
     A[Angular Client<br/>Каталог · Корзина · Уведомления] -->|HTTP + SignalR| B
 
-    B[API Gateway YARP<br/>JWT Auth · Routing]
+    B[API Gateway YARP<br/>JWT Auth · Routing · Rate Limit]
 
     B --> C[Catalog.API<br/>PostgreSQL · Redis · Elasticsearch]
     B --> D[Orders.API<br/>MSSQL]

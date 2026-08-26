@@ -1,6 +1,7 @@
 using System.Text;
 using Gateway.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Prometheus;
 using Serilog;
@@ -19,33 +20,6 @@ builder.Host.UseSerilog((ctx, config) =>
 
 // ── Controllers (для AuthController) ────────────────────
 builder.Services.AddControllers();
-//builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen(c =>
-// {
-//     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//     {
-//         Name = "Authorization",
-//         Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-//         Scheme = "Bearer",
-//         BearerFormat = "JWT",
-//         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-//         Description = "Введи JWT токен"
-//     });
-//     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-//     {
-//         {
-//             new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//             {
-//                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
-//                 {
-//                     Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-//                     Id = "Bearer"
-//                 }
-//             },
-//             Array.Empty<string>()
-//         }
-//     });
-// });
 
 // ── JWT ──────────────────────────────────────────────────
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
@@ -86,15 +60,43 @@ builder.Services.AddCors(options =>
     });
 });
 
+// ── Rate Limiter ─────────────────────────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    // Глобальный лимит — 100 запросов в минуту с одного IP
+    options.AddFixedWindowLimiter("fixed", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 10;
+    });
+
+    // Лимит для auth endpoint — 10 попыток логина в минуту
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+
+    // Что возвращать при превышении лимита
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = 429;
+        Console.WriteLine("Rate limit exceeded!");
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            error = "Too many requests",
+            retryAfter = "60 seconds"
+        }, token);
+    };
+});
+
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
-
 app.UseCors("AllowAll");
+app.UseRateLimiter();
 app.UseRouting();
 
 // JWT middleware — проверяет токен перед проксированием
@@ -105,6 +107,6 @@ app.UseAuthorization();
 app.UseHttpMetrics();
 
 app.MapControllers();
-app.MapReverseProxy();
+app.MapReverseProxy().RequireRateLimiting("fixed");
 
 app.Run();
