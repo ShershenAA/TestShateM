@@ -1,0 +1,30 @@
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Rider
+.idea/
+*.DotSettings.user
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
+
+# Angular
+node_modules/
+dist/
+.angular/
+
+# Environment
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
