@@ -77,4 +77,4 @@ jobs:
         run: docker build -f Dockerfile.gateway -t autoparts-gateway:${{ github.sha }} .
       
       - name: Build Angular Client
-        run: docker build -f Dockerfile.amgular -t autoparts-angular:${{ github.sha }} .
+        run: docker build -f Dockerfile.angular -t autoparts-angular:${{ github.sha }} .
