@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:5000',
-  hubUrl: 'http://localhost:5000/hubs/orders'
+  production: true,
+  apiUrl: '',  // пустая строка — запросы идут на тот же хост
+  hubUrl: '/hubs/orders'
 };

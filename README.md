@@ -62,34 +62,30 @@ Angular клиент получает уведомление в реальном
 
 ### Требования
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 20+](https://nodejs.org/)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) - только для локальной разработки
+- [Node.js 20+](https://nodejs.org/) - только для локальной разработки
 
-### Запуск инфраструктуры
+### Запуск через Docker Compose
 
 ```bash
-# Клонировать репозиторий
 git clone https://github.com/ShershenAA/TestShateM.git
 cd TestShateM
-
-# Поднять инфраструктуру и сервисы
 docker compose up -d
-
-# Запустить Angular клиент
-cd angular-client
-npm install
-ng serve
-```
-
-### Запуск Angular клиента
-
-```bash
-cd angular-client
-npm install
-ng serve
 ```
 
 Открой http://localhost:4200
+
+### Локальная разработка
+
+```bash
+# Поднять инфраструктуру
+docker compose up -d postgres mssql redis rabbitmq elasticsearch kibana prometheus grafana
+
+# Запустить Angular
+cd angular-client
+npm install
+ng serve
+```
 
 ### Запуск в Kubernetes (Minikube)
 

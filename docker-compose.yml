@@ -321,3 +321,18 @@ services:
       - notifications-api
     networks:
       - autoparts-net
+  # ──────────────────────────────────────────────
+  #  FRONTEND  (Angular 18)
+  # ──────────────────────────────────────────────
+  angular-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.angular
+    container_name: autoparts-angular
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - gateway
+    networks:
+      - autoparts-net
