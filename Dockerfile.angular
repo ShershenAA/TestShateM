@@ -1,11 +1,11 @@
-﻿FROM node:20-alpine AS build
+﻿FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY angular-client/package*.json ./
 RUN npm ci
 
 COPY angular-client/ .
-RUN npm run build
+RUN node_modules/.bin/ng build
 
 # Nginx для раздачи статики
 FROM nginx:alpine AS runtime
