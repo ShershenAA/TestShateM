@@ -5,7 +5,7 @@ COPY angular-client/package*.json ./
 RUN npm ci
 
 COPY angular-client/ .
-RUN node_modules/.bin/ng build
+RUN chmod +x node_modules/.bin/ng && node_modules/.bin/ng build
 
 # Nginx для раздачи статики
 FROM nginx:alpine AS runtime
